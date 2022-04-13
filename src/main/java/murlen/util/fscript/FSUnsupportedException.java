@@ -24,7 +24,7 @@ package murlen.util.fscript;
  * @author murlen
  */
 
-public class FSUnsupportedException extends FSException{
+public class FSUnsupportedException extends FSException {
     public FSUnsupportedException() {
     }
     

@@ -44,27 +44,25 @@ import java.lang.reflect.Method;
 
 public class FSReflectionExtension implements FSParserExtension {
     Parser parser;
-    IntrospectorBase introspector=new IntrospectorBase();
-    ExceptionHandler exceptionHandler=new ExceptionHandler() {
-        public void handle(String name, Exception exc) throws FSException {
-            throw new FSException("Error calling method "+name+" "+exc.getMessage());
-        }
+    IntrospectorBase introspector = new IntrospectorBase();
+    ExceptionHandler exceptionHandler = (name, exc) -> {
+        throw new FSException("Error calling method " + name + " " + exc.getMessage());
     };
-    FSObject nullObj=new FSObject(null);
+    FSObject nullObj = new FSObject(null);
 
     public void setParser(Parser parser) {
-        this.parser=parser;
+        this.parser = parser;
     }
 
     public Object getVar(String name) throws FSException {
-        int pos=name.indexOf('.');
-        if (pos>0) {
+        int pos = name.indexOf('.');
+        if (pos > 0) {
             String oname=name.substring(0, pos);
-            name=name.substring(pos+1);
-            Object object=parser.getVar(oname);
-            if (object!=null&&object instanceof FSObject) {
-                object=((FSObject)object).getObject();
-                if (object==null) throw new FSException("variable "+oname+" is null");
+            name = name.substring(pos+1);
+            Object object = parser.getVar(oname);
+            if (object != null && object instanceof FSObject) {
+                object = ((FSObject)object).getObject();
+                if (object == null) throw new FSException("variable " + oname + " is null");
 
                 return getObjectVar(object, name);
             }
@@ -73,14 +71,14 @@ public class FSReflectionExtension implements FSParserExtension {
     }
 
     public void setVar(String name, Object value) throws FSException {
-        int pos=name.indexOf('.');
-        if (pos>0) {
-            String oname=name.substring(0, pos);
-            name=name.substring(pos+1);
-            Object object=parser.getVar(oname);
-            if (object!=null&&object instanceof FSObject) {
-                object=((FSObject)object).getObject();
-                if (object==null) throw new FSException("variable "+oname+" is null");
+        int pos = name.indexOf('.');
+        if (pos > 0) {
+            String oname = name.substring(0, pos);
+            name = name.substring(pos+1);
+            Object object = parser.getVar(oname);
+            if (object != null&& object instanceof FSObject) {
+                object = ((FSObject)object).getObject();
+                if (object == null) throw new FSException("variable "+oname+" is null");
                 setObjectVar(object, name, value);
             } else {
                 throw new FSUnsupportedException();
@@ -100,24 +98,22 @@ public class FSReflectionExtension implements FSParserExtension {
     }
 
     public Object callFunction(String name, ArrayList params) throws FSException {
-        int pos=name.indexOf('.');
+        int pos = name.indexOf('.');
 
-        if (pos>0) {
-            String oname=name.substring(0, pos);
-            name=name.substring(pos+1);
-            Object object=parser.getVar(oname);
+        if (pos > 0) {
+            String oname = name.substring(0, pos);
+            name = name.substring(pos+1);
+            Object object = parser.getVar(oname);
 
             // we only work with FSObjects
-            if (object!=null&&object instanceof FSObject) {
-                object=((FSObject)object).getObject();
-
-                if (object==null) throw new FSException("variable "+oname+" is null");
-
+            if (object != null && object instanceof FSObject) {
+                object = ((FSObject)object).getObject();
+                if (object == null) throw new FSException("variable "+oname+" is null");
                 return objectMethod(object, name, params.toArray());
             }
         } else if (name.equals("create")) {
             // create a new object
-            ArrayList cParams=(ArrayList)params.clone();
+            ArrayList cParams=(ArrayList) params.clone();
             cParams.remove(0);
             return createObject(params.get(0).toString(), cParams);
 
@@ -137,28 +133,21 @@ public class FSReflectionExtension implements FSParserExtension {
      * comprehensive when it comes to checking types/etc so we don't get
      * bad calls
      */
-    protected Object objectMethod(Object target, String methodName, Object params[])
-    throws FSException {
-
-        Method method=null;
+    protected Object objectMethod(Object target, String methodName, Object[] params) throws FSException {
+        Method method;
         try {
-            Class c;
-            if (target instanceof Class){
-                c=(Class)target;
-            } else {
-                c=target.getClass();
-            }
-            method=introspector.getMethod(c, methodName, params);
+            Class<?> c = (target instanceof Class) ? (Class<?>)target : target.getClass();
+            method = introspector.getMethod(c, methodName, params);
         } catch (Exception ex) {
             throw new FSException("Error calling method "+methodName+ex.getMessage());
         }
-        if (method==null) throw new FSReflectionException("Error method "+methodName+" does not exists or ambigous");
+        if (method == null) throw new FSReflectionException("Error method " + methodName + " does not exists or ambigous");
         try {
             // rebuild argument list, unwrap all the FSObjects
-            Object params2[]=new Object[params.length];
-            for (int i=params.length-1 ; i>=0 ; i--) {
-                Object obj=params[i];
-                if (obj instanceof FSObject) obj=((FSObject)obj).getObject();
+            Object[] params2 = new Object[params.length];
+            for (int i = params.length-1 ; i >= 0 ; i--) {
+                Object obj = params[i];
+                if (obj instanceof FSObject) obj = ((FSObject)obj).getObject();
                 params2[i]=obj;
             }
             return normalizeObj(method.invoke(target, params2), method.getReturnType());
@@ -172,38 +161,32 @@ public class FSReflectionExtension implements FSParserExtension {
     private Object createObject(String className, ArrayList params)
     throws FSException {
         try {
-            Class c;
+            Class<?> c = getClass(className);
 
-            // create the class
-            c=getClass(className);
-
-            if (c==null)
-                return null;
+            if (c == null) return null;
 
             // build array of our params
-            Object[] o=new Object[params.size()];
+            Object[] o = new Object[params.size()];
             Object tmpObj;
 
-            for (int i=0 ; i<o.length ; i++) {
+            for (int i = 0; i < o.length ; i++) {
                 //unwrap fsobjects
-                tmpObj=params.get(i);
+                tmpObj = params.get(i);
                 if (tmpObj instanceof FSObject) {
-
-                    o[i]=((FSObject)tmpObj).getObject();
+                    o[i] = ((FSObject)tmpObj).getObject();
                 } else {
-                    o[i]=tmpObj;
+                    o[i] = tmpObj;
                 }
             }
 
-            java.lang.reflect.Constructor[] constructors=c.getDeclaredConstructors();
+            java.lang.reflect.Constructor[] constructors = c.getDeclaredConstructors();
 
             // find appropriate constructor
-            for (int i=0 ; i<constructors.length ; i++) {
-                Class[] classes=constructors[i].getParameterTypes();
-
+            for (java.lang.reflect.Constructor constructor : constructors) {
+                Class<?>[] classes = constructor.getParameterTypes();
                 if (checkMethods(classes, o)) {
                     // use to create object
-                    return normalizeObj(constructors[i].newInstance(o), c);
+                    return normalizeObj(constructor.newInstance(o), c);
                 }
             }
         } catch (Exception e) {
@@ -216,7 +199,7 @@ public class FSReflectionExtension implements FSParserExtension {
     /*
      * Returns a reference to a Class object of type <name>
      */
-    private Class getClass(String name) throws FSException {
+    private Class<?> getClass(String name) throws FSException {
         try {
             return Thread.currentThread().getContextClassLoader().loadClass(name);
         } catch (Exception e) {
@@ -229,38 +212,28 @@ public class FSReflectionExtension implements FSParserExtension {
      * Sets a field of an object (also tries java brans style set)
      */
     protected void setObjectVar(Object o, String name, Object value) throws FSException {
-        Object arr[]=new Object[1];
-        arr[0]=value;
+        Object[] arr = new Object[1];
+        arr[0] = value;
         try {
-            objectMethod(o, "set"+name, arr);
+            objectMethod(o, "set" + name, arr);
         } catch (FSReflectionException ex) {
             // unwrap fsobject
-            if (value instanceof FSObject){
-                value=((FSObject)value).getObject();
-            }
+            if (value instanceof FSObject) value = ((FSObject)value).getObject();
 
             // method not found, try direct field access
-            Class c;
-            //handle use of static classes
-            if (o instanceof Class){
-                //just cast to a class
-                c=(Class)o;
-            } else {
-                //it is not a class so we need to get the class
-                c=o.getClass();
-            }
-            java.lang.reflect.Field f=null;
+            Class<?> c = (o instanceof Class) ? (Class<?>)o : o.getClass();
+            java.lang.reflect.Field f = null;
 
             try {
                 //does the class have this field?
-                f=c.getField(name);
-            } catch (NoSuchFieldException e){}
+                f = c.getField(name);
+            } catch (NoSuchFieldException ignored) {}
 
-            if (f!=null) {
+            if (f != null) {
                 try {
                     f.set(o,value);
                 }
-                catch (Exception e){
+                catch (Exception e) {
                     throw new FSException("Could not access " + name + " " + e.getMessage());
                 }
             } else {
@@ -278,26 +251,19 @@ public class FSReflectionExtension implements FSParserExtension {
             return objectMethod(o, "get"+name, new Object[0]);
         } catch (FSReflectionException ex) {
             // try direct field access
-            Class c;
+            Class<?> c = (o instanceof Class) ? (Class<?>)o : o.getClass();
 
-            //handle static classes
-            if (o instanceof Class){
-                c=(Class)o;
-            } else {
-                c=o.getClass();
-            }
-
-            java.lang.reflect.Field f=null;
+            java.lang.reflect.Field f = null;
 
             try {
-                f=c.getField(name);
-            } catch (NoSuchFieldException e){}
+                f = c.getField(name);
+            } catch (NoSuchFieldException ignored) {}
 
-            if (f!=null){
+            if (f != null) {
                 try {
                     return normalizeObj(f.get(o), f.getType());
                 }
-                catch (Exception e){
+                catch (Exception e) {
                     throw new FSException("Could not access " + name + " " + e.getMessage());
                 }
             } else {
@@ -310,35 +276,24 @@ public class FSReflectionExtension implements FSParserExtension {
 
     // used to check that parameters of calling
     // object and method call match
-    private boolean checkMethods(Class[] c, Object[] o) {
-
-        int n,len;
+    private boolean checkMethods(Class<?>[] c, Object[] o) {
 
         // easy exit not the same length params
-        if (c.length!=o.length) {
-            return false;
-        }
+        if (c.length!=o.length) return false;
 
-        // check that methods have same types
-        len=c.length;
-        for (n=0 ; n<len ; n++) {
-
-            if (!c[n].isInstance(o[n])&&
-            !(c[n].equals(Integer.TYPE)&&o[n] instanceof Integer)&&
-            !(c[n].equals(Double.TYPE)&&o[n] instanceof Double)) {
+        for (int n = 0; n < c.length; n++) {
+            if (!c[n].isInstance(o[n]) && !(c[n].equals(Integer.TYPE) && o[n] instanceof Integer) && !(c[n].equals(Double.TYPE) && o[n] instanceof Double)) {
                 return false;
             }
         }
-
         return true;
-
     }
 
     /*
      * Ensures the right type is passed back i.e. Integer,String,Double
      * or FSObject
      */
-    private Object normalizeObj(Object o, Class c) {
+    private Object normalizeObj(Object o, Class<?> c) {
         // Return the right type...
         if (o instanceof Integer || o instanceof String || o instanceof Double) {
             return o;
@@ -354,15 +309,15 @@ public class FSReflectionExtension implements FSParserExtension {
      * @param eh the exception handler which should be used
      */
     public void setExceptionHandler(ExceptionHandler eh) {
-        exceptionHandler=eh;
+        exceptionHandler = eh;
     }
 
     public interface ExceptionHandler {
-        public void handle(String name, Exception exc) throws FSException;
+        void handle(String name, Exception exc) throws FSException;
     }
 
     // marker for method not found exceptions
-    public class FSReflectionException extends FSException {
+    public static class FSReflectionException extends FSException {
         public FSReflectionException() {}
         public FSReflectionException(String msg) { super(msg); }
     }

@@ -31,19 +31,18 @@ import java.util.ArrayList;
  * 15.03.2003 getContext()
  */
 
-public class FScript implements FSExtension{
+public class FScript implements FSExtension {
     
-    private Parser parser;
-    private LineLoader code;
-    private ArrayList extensions;
+    private final Parser parser;
+    private final LineLoader code;
+    private final ArrayList<FSExtension> extensions;
     
     /** Constructor */
     public FScript() {
-        
-        parser=new Parser(this);
-        code=new LineLoader();
+        parser = new Parser(this);
+        code = new LineLoader();
         parser.setCode(code);
-        extensions=new ArrayList();
+        extensions = new ArrayList();
         
     }
     /**
@@ -67,7 +66,7 @@ public class FScript implements FSExtension{
      *Registers language extensions
      *@param extension the extension to register
      **/
-    public void registerExtension(FSExtension extension){
+    public void registerExtension(FSExtension extension) {
         if (extension instanceof FSParserExtension)
             ((FSParserExtension)extension).setParser(parser);
         extensions.add(extension);
@@ -89,18 +88,19 @@ public class FScript implements FSExtension{
     public Object run() throws IOException, FSException {
         //reset the internal variable state
         parser.reset();
-        return parser.parse(0,code.lineCount()-1);
+        return parser.parse(0, code.lineCount() - 1);
     }
     
     public Object evaluateExpression(String expr) throws IOException, FSException {
-        if (!expr.startsWith("return ")) expr="return "+expr;
+        if (!expr.startsWith("return "))
+            expr = "return " + expr;
         return parser.parse(expr);
     }
     
     /**
      * Resets the internal code store
      */
-    public void reset(){
+    public void reset() {
         code.reset();
         parser.reset();
     }
@@ -112,13 +112,8 @@ public class FScript implements FSExtension{
      *@return any return value of the script's execution (will be one of
      *FScript's supported type objects, Integer,String,Double)
      */
-    public Object cont() throws IOException,FSException {
-        if (code.getCurLine()==0){
-            return run();
-        }
-        else {
-            return parser.parse(code.getCurLine()+1,code.lineCount()-1);
-        }
+    public Object cont() throws IOException, FSException {
+        return (code.getCurLine() == 0) ? run() : parser.parse(code.getCurLine() + 1, code.lineCount() - 1);
     }
     
     /**
@@ -152,7 +147,7 @@ public class FScript implements FSExtension{
      * to work in FScript
      * @return Object - currently expected to be String or Integer
      */
-    public Object getVar(String name)throws FSException {
+    public Object getVar(String name) throws FSException {
         throw new FSUnsupportedException(name);
     }
     
@@ -166,39 +161,24 @@ public class FScript implements FSExtension{
      * @param name the name of the variable the parser is requesting
      * @return Object - currently expected to be String, Integer or Double
      */
-    public Object getVar(String name,Object index)throws FSException {
+    public Object getVar(String name, Object index) throws FSException {
         throw new FSUnsupportedException(name);
     }
     
     /**
      *Entry point for parser (checks against extensions)
      **/
-    Object getVarEntry(String name,Object index) throws FSException {
-        int n;
-        
-        for(n=0;n<extensions.size();n++){
-            FSExtension extension=(FSExtension)extensions.get(n);
-            
+    Object getVarEntry(String name, Object index) throws FSException {
+        for (FSExtension extension : extensions) {
             try {
-                if (index==null){
-                    return extension.getVar(name);
-                } else {
-                    return extension.getVar(name,index);
-                }
-                
-            }
-            catch (FSUnsupportedException e){
+                return (index == null) ? extension.getVar(name) : extension.getVar(name, index);
+            } catch (FSUnsupportedException e) {
                 //Do nothing continue looping through extensions
             }
         }
-        
+
         //make call to (hopefully) subclass
-        if (index==null){
-            return getVar(name);
-        } else {
-            return getVar(name,index);
-        }
-        
+        return (index == null) ? getVar(name) : getVar(name, index);
     }
     
     /**
@@ -206,7 +186,7 @@ public class FScript implements FSExtension{
      * @param name the variable name
      * @param value the value to set it to
      */
-    public void setVar(String name,Object value) throws FSException {
+    public void setVar(String name, Object value) throws FSException {
         throw new FSUnsupportedException(name);
     }
     
@@ -216,8 +196,7 @@ public class FScript implements FSExtension{
      * @param index the index into the 'array'
      * @param value the value to set it to
      */
-    public void setVar(String name,Object index,Object value)
-    throws FSException {
+    public void setVar(String name, Object index, Object value) throws FSException {
         throw new FSUnsupportedException(name);
     }
     
@@ -225,34 +204,23 @@ public class FScript implements FSExtension{
     /**
      *Entry point for parser (checks against extensions)
      **/
-    void setVarEntry(String name,Object index,Object value) throws FSException {
-        
-        int n;
-        boolean handled=false;
-        
-        for(n=0;n<extensions.size();n++){
-            FSExtension extension=(FSExtension)extensions.get(n);
-            
+    void setVarEntry(String name, Object index, Object value) throws FSException {
+        boolean handled = false;
+
+        for (FSExtension extension : extensions) {
             try {
-                if (index==null){
-                    extension.setVar(name,value);
-                    handled=true;
-                } else {
-                    extension.setVar(name,index,value);
-                    handled=true;
-                }
-                
-            }
-            catch (FSUnsupportedException e){
+                if (index == null)
+                    extension.setVar(name, value);
+                else
+                    extension.setVar(name, index, value);
+                handled = true;
+            } catch (FSUnsupportedException e) {
                 //Do nothing continue looping through extensions
             }
         }
         
         //make call to (hopefully) subclass
-        if (!handled){
-            setVar(name,value);
-        }
-        
+        if (!handled) setVar(name, value);
     }
     
     /**
@@ -270,25 +238,17 @@ public class FScript implements FSExtension{
     /**
      *Entry point for parser (checks against extensions)
      **/
-    Object callFunctionEntry(String name,ArrayList params)
-    throws FSException {
-        
-        int n;
-        
-        for(n=0;n<extensions.size();n++){
-            FSExtension extension=(FSExtension)extensions.get(n);
-            
+    Object callFunctionEntry(String name, ArrayList params) throws FSException {
+        for (FSExtension fsExtension : extensions) {
             try {
-                return extension.callFunction(name,params);
-            }
-            catch (FSUnsupportedException e){
+                return fsExtension.callFunction(name, params);
+            } catch (FSUnsupportedException e) {
                 //Do nothing continue looping through extensions
             }
         }
         
         //make call to (hopefully) subclass
-        
-        return callFunction(name,params);
+        return callFunction(name, params);
     }
     
     /**
@@ -298,8 +258,8 @@ public class FScript implements FSExtension{
      *should be used with caution from within an overriden setVar.
      *@param name the name of the variable
      *@param value the value to set variable to (String,Integer)*/
-    public final void setScriptVar(String name,Object value) throws FSException{
-        parser.setVar(name,value);
+    public final void setScriptVar(String name, Object value) throws FSException {
+        parser.setVar(name, value);
     }
     
     /**
@@ -308,7 +268,7 @@ public class FScript implements FSExtension{
      *should be used with caution from within an overriden getVar.
      *@param name the name of the variable
      *@return the value of the variable (String,Integer)*/
-    public final Object getScriptVar(String name) throws FSException{
+    public final Object getScriptVar(String name) throws FSException {
         return parser.getVar(name);
     }
     
@@ -319,9 +279,8 @@ public class FScript implements FSExtension{
      *@param params the parameters to pass (must be correct type and number)
      *@return the return value of the function (String,Integer)
      */
-    public final Object callScriptFunction(String name,ArrayList params) throws
-    IOException,FSException{
-        return parser.callFunction(name,params);
+    public final Object callScriptFunction(String name, ArrayList params) throws IOException, FSException {
+        return parser.callFunction(name, params);
     }
     
     /**

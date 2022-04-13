@@ -31,9 +31,9 @@ import java.util.Hashtable;
  * 11.08.2002 (murlen) Changed function names to add<X>Extension + java doc
  */
 public class FSFastExtension implements FSExtension {
-    Hashtable variables=new Hashtable();
-    Hashtable functions=new Hashtable();
-    Hashtable arrays=new Hashtable();
+    Hashtable<String, FSVarExtension> variables = new Hashtable<>();
+    Hashtable<String, FSFunctionExtension> functions = new Hashtable<>();
+    Hashtable<String, FSArrayExtension> arrays = new Hashtable<>();
 
     /**
      * Add new FSVarExtension to this FastExtension
@@ -63,16 +63,17 @@ public class FSFastExtension implements FSExtension {
     }
 
     public Object getVar(String name) throws FSException {
-        FSVarExtension var=(FSVarExtension)variables.get(name);
-        if (var!=null) return var.getVar(name);
+        FSVarExtension var = variables.get(name);
+        if (var != null)
+            return var.getVar(name);
         throw new FSUnsupportedException();
     }
 
     //FSExtension implementation code below here.
 
     public void setVar(String name, Object value) throws FSException {
-        FSVarExtension var=(FSVarExtension)variables.get(name);
-        if (var!=null) {
+        FSVarExtension var = variables.get(name);
+        if (var != null) {
             var.setVar(name, value);
             return;
         }
@@ -80,23 +81,25 @@ public class FSFastExtension implements FSExtension {
     }
 
     public Object getVar(String name, Object index) throws FSException {
-        FSArrayExtension var=(FSArrayExtension)arrays.get(name);
-        if (var!=null) return var.getVar(name,index);
+        FSArrayExtension var = arrays.get(name);
+        if (var != null)
+            return var.getVar(name, index);
         throw new FSUnsupportedException();
     }
 
     public void setVar(String name, Object index, Object value) throws FSException {
-        FSArrayExtension var=(FSArrayExtension)arrays.get(name);
-        if (var!=null) {
-            var.setVar(name,index,value);
+        FSArrayExtension var = arrays.get(name);
+        if (var != null) {
+            var.setVar(name, index, value);
             return;
         }
         throw new FSUnsupportedException();
     }
 
     public Object callFunction(String name, ArrayList params) throws FSException {
-        FSFunctionExtension var=(FSFunctionExtension)functions.get(name);
-        if (var!=null) return var.callFunction(name,params);
+        FSFunctionExtension var = functions.get(name);
+        if (var != null)
+            return var.callFunction(name, params);
         throw new FSUnsupportedException();
     }
 

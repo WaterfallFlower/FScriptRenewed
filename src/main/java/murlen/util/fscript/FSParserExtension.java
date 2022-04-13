@@ -28,6 +28,6 @@ public interface FSParserExtension extends FSExtension {
      * set the parser which is used to parse the executed Fscript code
      * @param parser
      */
-    public void setParser(Parser parser);
+    void setParser(Parser parser);
     
 }

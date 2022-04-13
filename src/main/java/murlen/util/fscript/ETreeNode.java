@@ -22,8 +22,8 @@ package murlen.util.fscript;
  */
 class ETreeNode {
     
-    static int E_OP=0;
-    static int E_VAL=1;
+    static int E_OP = 0;
+    static int E_VAL = 1;
     
     int type;
     
@@ -33,9 +33,10 @@ class ETreeNode {
     ETreeNode right;
     
     ETreeNode parent;
-    
-    public String toString(){
-        return new String("Type=" + type + " Value=" + value);
+
+    @Override
+    public String toString() {
+        return "Type=" + type + " Value=" + value;
     }
     
     

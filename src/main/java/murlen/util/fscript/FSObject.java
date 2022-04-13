@@ -29,57 +29,51 @@ package murlen.util.fscript;
  * 28.02.2004 make null typed
  */
 
-public class FSObject
-    extends Object
-{
+public class FSObject {
     private Object value;
-    private Class nullClass;
+    private Class<?> nullClass;
 
     public FSObject() {}
 
-    public FSObject( Object value ) { this.value = value; }
+    public FSObject(Object value) {
+        this.value = value;
+    }
 
-    public FSObject( Object value, Class nClass )
-    {
+    public FSObject(Object value, Class<?> nClass) {
         this.value = value;
         nullClass = nClass;
     }
 
-    public Object getObject() { return value; }
+    public Object getObject() {
+        return value;
+    }
 
-    public void setObject( Object value )
-    {
+    public void setObject(Object value) {
         this.value = value;
         nullClass = null;
     }
 
-    public void setObject( Object value, Class nClass )
-    {
+    public void setObject(Object value, Class<?> nClass) {
         this.value = value;
         nullClass = nClass;
     }
 
-    public Class getNullClass()
-    {
+    public Class<?> getNullClass() {
         return value == null ? nullClass : value.getClass();
     }
 
-    public boolean equals( Object obj )
-    {
-        if ( this == obj ) return true;
-        if ( obj instanceof FSObject )
-        {
-            obj = ( (FSObject) obj ).getObject();
-        }
-        if ( value == obj ) return true;
-        if ( value != null ) return value.equals( obj );
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj instanceof FSObject) obj = ((FSObject) obj).getObject();
+        if (value == obj) return true;
+        if (value != null) return value.equals( obj );
         return false;
     }
 
-    public String toString()
-    {
-        if ( value == null ) return "<null>";
-        return "FSObject Containing - " + value.toString();
+    public String toString() {
+        if (value == null)
+            return "<null>";
+        return "FSObject Containing - " + value;
     }
 
 }

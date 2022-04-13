@@ -36,7 +36,7 @@ public interface FSArrayExtension {
      * @return the value of the variable (as one of FScript's supported object
      * types)
      **/
-    public Object getVar(String name,Object index) throws FSException;
+    Object getVar(String name, Object index) throws FSException;
     
     /**
      * <p>setVar is called whenever a variable is written to in FScript that has not
@@ -47,5 +47,5 @@ public interface FSArrayExtension {
      * @param index the index
      * @param value the value to assign to the variable
      **/
-    public void setVar(String name,Object index,Object value) throws FSException;
+    void setVar(String name, Object index, Object value) throws FSException;
 }

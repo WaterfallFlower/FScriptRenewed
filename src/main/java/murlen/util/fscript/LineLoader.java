@@ -61,7 +61,7 @@ final class LineLoader {
      * load with script from InputStreamReader
      * @param is  - the input stream to read from
      */
-    final void load(Reader is) throws IOException {
+    void load(Reader is) throws IOException {
 
         BufferedReader in = new BufferedReader(is);
         String s;
@@ -79,7 +79,7 @@ final class LineLoader {
 
     /**
      * resets the LineLoader  */
-    final void reset() {
+    void reset() {
         lines=new ArrayList(200);
         curLine=0;
     }
@@ -87,7 +87,7 @@ final class LineLoader {
     /**
      * method to incrementally add lines to buffer
      * @param s the line to load */
-    final void addLine(String s) {
+    void addLine(String s) {
         if (!s.trim().equals("")) {
             if (s.endsWith("...") && !hasComment(s)) {
                 if (contLine!=null) {

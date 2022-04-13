@@ -24,28 +24,30 @@ import java.util.ArrayList;
  *
  **/
 
-public abstract class BasicExtension implements FSExtension{
-    
-    public BasicExtension() {
-    }
-    
-    public Object callFunction(String name, ArrayList params) throws FSException{
+public abstract class BasicExtension implements FSExtension {
+
+    @Override
+    public Object callFunction(String name, ArrayList params) throws FSException {
         throw new FSUnsupportedException(name);
     }
-    
-    public Object getVar(String name) throws FSException{
+
+    @Override
+    public Object getVar(String name) throws FSException {
         throw new FSUnsupportedException(name);
     }
-    
-    public void setVar(String name,Object value) throws FSException{
+
+    @Override
+    public void setVar(String name, Object value) throws FSException {
         throw new FSUnsupportedException(name);
     }
-    
-    public Object getVar(String name,Object index) throws FSException{
+
+    @Override
+    public Object getVar(String name, Object index) throws FSException {
         throw new FSUnsupportedException(name);
     }
-    
-    public void setVar(String name,Object index,Object value) throws FSException{
+
+    @Override
+    public void setVar(String name, Object index, Object value) throws FSException {
         throw new FSUnsupportedException(name);
     }
     

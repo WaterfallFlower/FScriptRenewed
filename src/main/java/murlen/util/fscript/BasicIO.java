@@ -28,12 +28,12 @@ import java.util.*;
  */
 public class BasicIO extends FScript {
     
-    private Object files[];
+    private final Object[] files;
     
     /**Constructor*/
     public BasicIO() {
         super();
-        files=new Object[25];
+        files = new Object[25];
     }
     
     /**
@@ -54,135 +54,122 @@ public class BasicIO extends FScript {
      * <p> <b>void write(fp,param...) - writes concatination of all params to one
      * line of file </p>
      */
-    public Object callFunction(String name,ArrayList param) throws FSException {
-        
-        //(void) println(param.....)
-        if (name.equals("println")) {
-            int n;
-            String s="";
-            for(n=0;n<param.size();n++) {
-                s=s+ param.get(n);
+    @Override
+    public Object callFunction(String name, ArrayList param) throws FSException {
+        switch (name) {
+            //(void) println(param.....)
+            case "println": {
+                StringBuilder s= new StringBuilder();
+                for (Object o : param) {
+                    s.append(o);
+                }
+                System.out.println(s);
+                break;
             }
-            System.out.println(s);
-        }
-        //string readln()
-        else if (name.equals("readln")) {
-            try {
-                return new BufferedReader(
-                new InputStreamReader(System.in)).readLine();
-                
-            } catch (IOException e)  {
-                throw new FSException(e.getMessage());
+
+            //string readln()
+            case "readln": {
+                try {
+                    return new BufferedReader(new InputStreamReader(System.in)).readLine();
+                } catch (IOException e)  {
+                    throw new FSException(e.getMessage());
+                }
             }
-        }
-        //int open(string file,string mode)
-        else if (name.equals("open")) {
-            int n;
-            
-            try {
-                for(n=0;n<25;n++) {
-                    if (files[n]==null) {
-                        if (((String)param.get(1)).equals("r")) {
-                            files[n]=new BufferedReader(
-                            new FileReader((String)param.get(0)));
-                            break;
-                        } else if (((String)param.get(1)).equals("w"))  {
-                            files[n]=new BufferedWriter(
-                            new FileWriter((String)param.get(0)));
-                            break;
-                        } else {
-                            throw new FSException(
-                            "open expects 'r' or 'w' for modes");
+
+            //int open(string file,string mode)
+            case "open": {
+                int n;
+                try {
+                    for(n = 0; n < 25; n++) {
+                        if (files[n] == null) {
+                            if (param.get(1).equals("r")) {
+                                files[n] = new BufferedReader(new FileReader((String)param.get(0)));
+                                break;
+                            } else if (param.get(1).equals("w")) {
+                                files[n] = new BufferedWriter(new FileWriter((String)param.get(0)));
+                                break;
+                            } else throw new FSException("open expects 'r' or 'w' for modes");
                         }
                     }
+                } catch (IOException e)  {
+                    throw new FSException(e.getMessage());
                 }
-            } catch (IOException e)  {
-                throw new FSException(e.getMessage());
+                return (n < 25) ? n : -1;
             }
-            if (n<25) return new Integer(n);
-            else return new Integer(-1);
-        }
-        //(void)close(int fp)
-        else if (name.equals("close")) {
-            int n;
-            n=((Integer)param.get(0)).intValue();
-            if (files[n]==null) {
-                throw new FSException("Invalid file number passed to close");
-            }
-            try {
-                if (files[n] instanceof BufferedWriter) {
-                    ((BufferedWriter)files[n]).close();
-                } else {
-                    ((BufferedReader)files[n]).close();
+
+            //(void)close(int fp)
+            case "close": {
+                int n = (Integer) param.get(0);
+                if (files[n] == null) throw new FSException("Invalid file number passed to close");
+
+                try {
+                    if (files[n] instanceof BufferedWriter) {
+                        ((BufferedWriter)files[n]).close();
+                    } else {
+                        ((BufferedReader)files[n]).close();
+                    }
+                    files[n] = null;
+                } catch (IOException e) {
+                    throw new FSException(e.getMessage());
                 }
-                files[n]=null;
-            } catch (IOException e) {
-                throw new FSException(e.getMessage());
             }
-        }
-        //(void) write(params....)
-        else if (name.equals("write")) {
-            int n;
-            String s="";
-            for(n=1;n<param.size();n++) {
-                s=s+ param.get(n);
-            }
-            n=((Integer)param.get(0)).intValue();
-            if (files[n]==null) {
-                throw new FSException("Invalid file number passed to write");
-            }
-            if (!(files[n] instanceof BufferedWriter)) {
-                throw new FSException("Invalid file mode for write");
-            }
-            try {
-                ((BufferedWriter)files[n]).write(s,0,s.length());
-                ((BufferedWriter)files[n]).newLine();
-            } catch (IOException e) {
-                throw new FSException(e.getMessage());
-            }
-        }
-        //string read(int fp)
-        else if (name.equals("read")) {
-            int n;
-            String s;
-            n=((Integer)param.get(0)).intValue();
-            if (files[n]==null) {
-                throw new FSException("Invalid file number passed to read");
-            }
-            if (!(files[n] instanceof BufferedReader)) {
-                throw new FSException("Invalid file mode for read");
-            }
-            try {
-                s=((BufferedReader)files[n]).readLine();
-                //dodge eof problems
-                if (s==null) s="";
-                return s;
-            } catch (IOException e) {
-                throw new FSException(e.getMessage());
-            }
-        }
-        //int eof(fp)
-        else if (name.equals("eof")) {
-            int n;
-            n=((Integer)param.get(0)).intValue();
-            if (files[n]==null) {
-                throw new FSException("Invalid file number passed to eof");
-            }
-            BufferedReader br=(BufferedReader)files[n];
-            try {
-                br.mark(1024);
-                if (br.readLine()==null) {
-                    return new Integer(1);
-                } else {
-                    br.reset();
-                    return new Integer(0);
+
+            //(void) write(params....)
+            case "write": {
+                StringBuilder s = new StringBuilder();
+                for(int n = 1; n < param.size(); n++)
+                    s.append(param.get(n));
+
+                int n = (Integer) param.get(0);
+                if (files[n] == null) throw new FSException("Invalid file number passed to write");
+                if (!(files[n] instanceof BufferedWriter)) throw new FSException("Invalid file mode for write");
+
+                try {
+                    ((BufferedWriter)files[n]).write(s.toString(), 0, s.length());
+                    ((BufferedWriter)files[n]).newLine();
+                } catch (IOException e) {
+                    throw new FSException(e.getMessage());
                 }
-            } catch (IOException e) {
-                throw new FSException(e.getMessage());
             }
-        } else {
-            super.callFunction(name,param);
+
+            //string read(int fp)
+            case "read": {
+                int n = (Integer) param.get(0);
+
+                if (files[n] == null)
+                    throw new FSException("Invalid file number passed to read");
+                if (!(files[n] instanceof BufferedReader))
+                    throw new FSException("Invalid file mode for read");
+
+                try {
+                    String s = ((BufferedReader)files[n]).readLine();
+                    //dodge eof problems
+                    if (s == null) s = "";
+                    return s;
+                } catch (IOException e) {
+                    throw new FSException(e.getMessage());
+                }
+            }
+
+            //int eof(fp)
+            case "eof": {
+                int n = (Integer) param.get(0);
+                if (files[n] == null) throw new FSException("Invalid file number passed to eof");
+                try(BufferedReader br = (BufferedReader)files[n]) {
+                    br.mark(1024);
+                    if (br.readLine() == null) {
+                        return 1;
+                    } else {
+                        br.reset();
+                        return 0;
+                    }
+                } catch (IOException e) {
+                    throw new FSException(e.getMessage());
+                }
+            }
+
+            default: super.callFunction(name,param);
         }
-        return new Integer(0);
+        return 0;
     }
 }

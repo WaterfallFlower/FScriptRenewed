@@ -33,7 +33,7 @@ public interface FSVarExtension {
      * @return the value of the variable (as one of FScript's supported object
      * types)
      **/
-    public Object getVar(String name) throws FSException;
+    Object getVar(String name) throws FSException;
     
     /**
      * <p>setVar is called whenever a variable is written to in FScript that has not
@@ -41,6 +41,6 @@ public interface FSVarExtension {
      * @param name the variable name
      * @param value the value to assign to the variable
      **/
-    public void setVar(String name,Object value) throws FSException;
+    void setVar(String name, Object value) throws FSException;
     
 }
