@@ -55,7 +55,7 @@ public class BasicIO extends FScript {
      * line of file </p>
      */
     @Override
-    public Object callFunction(String name, ArrayList param) throws FSException {
+    public Object callFunction(String name, ArrayList<Object> param) throws FSException {
         switch (name) {
             //(void) println(param.....)
             case "println": {

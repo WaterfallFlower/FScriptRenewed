@@ -23,18 +23,19 @@ import java.io.IOException;
  * <p>You should have received a copy of the GNU Library General Public
  * License along with this library; if not, write to the Free
  * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA </p>
+ *
  * @author murlen
  * @author Joachim Van der Auwera
  * @version 1.12
- *
+ * <p>
  * changes by Joachim Van der Auwera
  * 20.08.2001
- *   - getLine added
- *   - setCurLine test was wrong, allowed setting line one too far
+ * - getLine added
+ * - setCurLine test was wrong, allowed setting line one too far
  * 02.08.2002
- *   - allow commands to be split over multiple line by using the "..." continuation mark
+ * - allow commands to be split over multiple line by using the "..." continuation mark
  * 07.10.2002
- *   - do not join lines when the ... is at the end of a comment
+ * - do not join lines when the ... is at the end of a comment
  * 08.11.2002 but do join them when the hash is inside a quote (and does not indicate a comment)
  * 17.09.2003 moved checking for mismatched quotes and brackets here
  * 24.11.2003 (jvda) use char[] instead of String to store lines
@@ -42,69 +43,74 @@ import java.io.IOException;
 
 final class LineLoader {
 
-    ArrayList lines;
+    ArrayList<char[]> lines;
     private String contLine;    // previous line if it ended with "..." (but without the "...")
-    private char[] emptyLine=new char[0];
+    private final char[] emptyLine = new char[0];
 
     int curLine;
     String forError;
 
     /**
-     *Constructor */
+     * Constructor
+     */
     LineLoader() {
 
-        lines=new ArrayList(200);
-        curLine=0;
+        lines = new ArrayList<>(200);
+        curLine = 0;
     }
 
     /**
      * load with script from InputStreamReader
-     * @param is  - the input stream to read from
+     *
+     * @param is - the input stream to read from
      */
     void load(Reader is) throws IOException {
 
         BufferedReader in = new BufferedReader(is);
         String s;
-        s=in.readLine();
+        s = in.readLine();
 
-        while(s!=null) {
+        while (s != null) {
             addLine(s);
-            s=in.readLine();
+            s = in.readLine();
         }
 
         in.close();
 
-        curLine=0;
+        curLine = 0;
     }
 
     /**
-     * resets the LineLoader  */
+     * resets the LineLoader
+     */
     void reset() {
-        lines=new ArrayList(200);
-        curLine=0;
+        lines = new ArrayList<>(200);
+        curLine = 0;
     }
 
     /**
      * method to incrementally add lines to buffer
-     * @param s the line to load */
+     *
+     * @param s the line to load
+     */
     void addLine(String s) {
         if (!s.trim().equals("")) {
             if (s.endsWith("...") && !hasComment(s)) {
-                if (contLine!=null) {
-                    contLine+=s.substring(0,s.length()-3);
+                if (contLine != null) {
+                    contLine += s.substring(0, s.length() - 3);
                 } else {
-                    contLine=s.substring(0,s.length()-3);
+                    contLine = s.substring(0, s.length() - 3);
                 }
             } else {
-                if (contLine!=null) {
-                    contLine+=s;
+                if (contLine != null) {
+                    contLine += s;
                 } else {
-                    contLine=s;
+                    contLine = s;
                 }
-                char line[]=contLine.toCharArray();
+                char[] line = contLine.toCharArray();
                 checkLine(line);
                 lines.add(line);
-                contLine=null;
+                contLine = null;
             }
         } else {
             //need to add blank lines to keep error msg lines
@@ -117,104 +123,112 @@ final class LineLoader {
         boolean cont;
         int hash, quote;
         while (!s.equals("")) {
-            hash=s.indexOf('#');
-            if (hash==-1) return false;
-            quote=s.indexOf('\"');
-            if (quote==-1 || hash<quote) return true;
+            hash = s.indexOf('#');
+            if (hash == -1) return false;
+            quote = s.indexOf('\"');
+            if (quote == -1 || hash < quote) return true;
             // hash may be inside a string, so remove quoted part
-            cont=true;
+            cont = true;
             while (cont) {
-                s=s.substring(quote+1);
-                quote=s.indexOf('\"');
-                if (quote==0 || s.charAt(quote-1)!='\\') cont=false;
+                s = s.substring(quote + 1);
+                quote = s.indexOf('\"');
+                if (quote == 0 || s.charAt(quote - 1) != '\\') cont = false;
             }
-            s=s.substring(quote+1);
+            s = s.substring(quote + 1);
         }
         return false;
     }
 
     /**
      * Sets the current execution line
-     * @param n the line number */
-    final void setCurLine(int n) {
-        if (n>lines.size()) {
-            n=lines.size()-1;
-        } else if (n<0) {
-            n=0;
+     *
+     * @param n the line number
+     */
+    void setCurLine(int n) {
+        if (n > lines.size()) {
+            n = lines.size() - 1;
+        } else if (n < 0) {
+            n = 0;
         }
 
-        curLine=n;
+        curLine = n;
     }
 
     /**
-     * Returns the current execution line */
-    final int getCurLine() {
+     * Returns the current execution line
+     */
+    int getCurLine() {
         return curLine;
     }
 
     /**
-     * Returns the total number of lines in buffer */
-    final int lineCount() {
+     * Returns the total number of lines in buffer
+     */
+    int lineCount() {
         return lines.size();
     }
 
     /**
-     * Returns the text of the current line */
-    final char[] getLine() {
-        return (char[])lines.get(curLine);
+     * Returns the text of the current line
+     */
+    char[] getLine() {
+        return lines.get(curLine);
     }
 
     /**
-     * Returns the text of the current line as a String */
-    final String getLineAsString() {
-        if ( curLine == -1 ) return forError;
-        return new String((char[])lines.get(curLine));
+     * Returns the text of the current line as a String
+     */
+    String getLineAsString() {
+        if (curLine == -1) return forError;
+        return new String(lines.get(curLine));
     }
 
     /**
-     *Returns the text of the requested line*/
-    final char[] getLine(int n){
-        if (n<0 || n>=lines.size()) return emptyLine;
-        return (char[])lines.get(n);
+     * Returns the text of the requested line
+     */
+    char[] getLine(int n) {
+        if (n < 0 || n >= lines.size()) return emptyLine;
+        return lines.get(n);
     }
 
-   /**
-     * Returns the text of the requested line as a String */
-    final String getLineAsString(int n) {
-        if (n<0 || n>=lines.size()) return "";
-        return new String((char[])lines.get(n));
+    /**
+     * Returns the text of the requested line as a String
+     */
+    String getLineAsString(int n) {
+        if (n < 0 || n >= lines.size()) return "";
+        return new String(lines.get(n));
     }
 
     /**
      * Checks line for correctly formed ( ) and "
      */
-    static void checkLine(char chars[]) {
-        boolean inQuotes=false;
-        int brCount=0;
+    static void checkLine(char[] chars) {
+        boolean inQuotes = false;
+        int brCount = 0;
         int n;
 
-        if (chars!=null) {
-            for (n=0 ; n<chars.length ; n++) {
-                if (chars[n]=='#' && !inQuotes) {
-                    n=chars.length;
+        if (chars != null) {
+            for (n = 0; n < chars.length; n++) {
+                if (chars[n] == '#' && !inQuotes) {
+                    n = chars.length;
                 } else {
                     if (inQuotes) {
-                        if (chars[n]=='"') {
-                            if (n>=1) {
-                                if (chars[n-1]!='\\') {
-                                    inQuotes=false;
+                        if (chars[n] == '"') {
+                            if (n >= 1) {
+                                if (chars[n - 1] != '\\') {
+                                    inQuotes = false;
                                 }
                             }
                         }
                     } else {
-                        if (chars[n]=='(') {
+                        if (chars[n] == '(') {
                             brCount++;
-                        } else if (chars[n]==')') {
+                        } else if (chars[n] == ')') {
                             brCount--;
-                        } else if (chars[n]=='"') {
-                            if (n>=1) {
-                                if (chars[n-1]!='\\') {
-                                    inQuotes=true;
+                        } else if (chars[n] == '"') {
+                            if (n >= 1) {
+                                if (chars[n - 1] != '\\') {
+                                    inQuotes = true;
                                 }
                             }
                         }
@@ -224,10 +238,10 @@ final class LineLoader {
 
 
             if (inQuotes) {
-                throw new RuntimeException("Mismatched quotes\n"+new String (chars));
+                throw new RuntimeException("Mismatched quotes\n" + new String(chars));
             }
-            if (brCount!=0) {
-                throw new RuntimeException("Mismatched brackets\n"+new String (chars));
+            if (brCount != 0) {
+                throw new RuntimeException("Mismatched brackets\n" + new String(chars));
             }
         }
 

@@ -1,4 +1,7 @@
-package murlen.util.fscript;
+package murlen.util.fscript.api;
+
+import murlen.util.fscript.FSException;
+
 /**
  * FSVarExtension - simple variable extension to plug into FSFastExtension
  * <p>

@@ -1,4 +1,6 @@
 package murlen.util.fscript;
+import murlen.util.fscript.api.FSExtension;
+
 import java.util.ArrayList;
 /**
  *<p>This class implements a bare FSExtension - subclassing from this will help
@@ -27,7 +29,7 @@ import java.util.ArrayList;
 public abstract class BasicExtension implements FSExtension {
 
     @Override
-    public Object callFunction(String name, ArrayList params) throws FSException {
+    public Object callFunction(String name, ArrayList<Object> params) throws FSException {
         throw new FSUnsupportedException(name);
     }
 

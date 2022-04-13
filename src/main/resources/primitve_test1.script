@@ -1,0 +1,10 @@
+$import math
+
+#Primitive sets of various tests.
+
+
+#First - declaring various variables.
+double a_var = -123.2365245
+b_var = 0
+
+println(floor(a_var))

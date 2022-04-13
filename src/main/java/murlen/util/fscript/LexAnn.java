@@ -459,7 +459,7 @@ final class LexAnn {
         wordToken.put("elseif", TT_ELSIF);
         wordToken.put("while", TT_WHILE);
         wordToken.put("endwhile", TT_EWHILE);
-        wordToken.put("func", TT_DEFFUNC);
+        wordToken.put("function", TT_DEFFUNC);
         wordToken.put("endfunc", TT_EDEFFUNC);
         wordToken.put("return", TT_RETURN);
         wordToken.put("int", TT_DEFINT);

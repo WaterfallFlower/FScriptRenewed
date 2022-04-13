@@ -1,5 +1,6 @@
 package murlen.util.fscript;
 
+import murlen.util.fscript.api.FSParserExtension;
 import murlen.util.fscript.introspection.IntrospectorBase;
 
 import java.util.ArrayList;
@@ -76,7 +77,7 @@ public class FSReflectionExtension implements FSParserExtension {
             String oname = name.substring(0, pos);
             name = name.substring(pos+1);
             Object object = parser.getVar(oname);
-            if (object != null&& object instanceof FSObject) {
+            if (object != null && object instanceof FSObject) {
                 object = ((FSObject)object).getObject();
                 if (object == null) throw new FSException("variable "+oname+" is null");
                 setObjectVar(object, name, value);
@@ -97,7 +98,7 @@ public class FSReflectionExtension implements FSParserExtension {
         // @todo ...
     }
 
-    public Object callFunction(String name, ArrayList params) throws FSException {
+    public Object callFunction(String name, ArrayList<Object> params) throws FSException {
         int pos = name.indexOf('.');
 
         if (pos > 0) {
@@ -158,7 +159,7 @@ public class FSReflectionExtension implements FSParserExtension {
     }
 
 
-    private Object createObject(String className, ArrayList params)
+    private Object createObject(String className, ArrayList<Object> params)
     throws FSException {
         try {
             Class<?> c = getClass(className);

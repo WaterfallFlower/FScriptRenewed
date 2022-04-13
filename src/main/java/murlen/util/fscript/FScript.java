@@ -1,5 +1,8 @@
 package murlen.util.fscript;
 
+import murlen.util.fscript.api.FSExtension;
+import murlen.util.fscript.api.FSParserExtension;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -42,7 +45,7 @@ public class FScript implements FSExtension {
         parser = new Parser(this);
         code = new LineLoader();
         parser.setCode(code);
-        extensions = new ArrayList();
+        extensions = new ArrayList<>();
         
     }
     /**
@@ -231,14 +234,14 @@ public class FScript implements FSExtension {
      * @param params an ArrayList of parameter values
      * @return an Object, currently expected to be Integer or String
      */
-    public Object callFunction(String name, ArrayList params) throws FSException {
+    public Object callFunction(String name, ArrayList<Object> params) throws FSException {
         throw new FSUnsupportedException(name);
     }
     
     /**
      *Entry point for parser (checks against extensions)
      **/
-    Object callFunctionEntry(String name, ArrayList params) throws FSException {
+    Object callFunctionEntry(String name, ArrayList<Object> params) throws FSException {
         for (FSExtension fsExtension : extensions) {
             try {
                 return fsExtension.callFunction(name, params);
@@ -279,7 +282,7 @@ public class FScript implements FSExtension {
      *@param params the parameters to pass (must be correct type and number)
      *@return the return value of the function (String,Integer)
      */
-    public final Object callScriptFunction(String name, ArrayList params) throws IOException, FSException {
+    public final Object callScriptFunction(String name, ArrayList<Object> params) throws IOException, FSException {
         return parser.callFunction(name, params);
     }
     

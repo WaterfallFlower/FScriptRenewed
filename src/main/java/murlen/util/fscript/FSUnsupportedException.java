@@ -25,8 +25,7 @@ package murlen.util.fscript;
  */
 
 public class FSUnsupportedException extends FSException {
-    public FSUnsupportedException() {
-    }
+    public FSUnsupportedException() {}
     
     /**
      *Exception specifically used to indicate that extensions/subclasses

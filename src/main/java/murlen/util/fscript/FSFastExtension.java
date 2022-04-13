@@ -1,4 +1,9 @@
 package murlen.util.fscript;
+import murlen.util.fscript.api.FSArrayExtension;
+import murlen.util.fscript.api.FSExtension;
+import murlen.util.fscript.api.FSFunctionExtension;
+import murlen.util.fscript.api.FSVarExtension;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -96,7 +101,7 @@ public class FSFastExtension implements FSExtension {
         throw new FSUnsupportedException();
     }
 
-    public Object callFunction(String name, ArrayList params) throws FSException {
+    public Object callFunction(String name, ArrayList<Object> params) throws FSException {
         FSFunctionExtension var = functions.get(name);
         if (var != null)
             return var.callFunction(name, params);

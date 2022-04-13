@@ -72,7 +72,7 @@ import java.util.ArrayList;
  * - more powerful compare for FSObject instance with something else
  * 14.04.2004 elsif opperator support
  */
-final class Parser {
+public final class Parser {
     public static final Integer FS_TRUE = 1;
     public static final Integer FS_FALSE = 0;
 
@@ -360,7 +360,7 @@ final class Parser {
         }
     }
 
-    Object callFunction(String name, ArrayList params) throws IOException, FSException {
+    Object callFunction(String name, ArrayList<Object> params) throws IOException, FSException {
         Object val = null;
 
         //Check we have a definition for the function
@@ -1296,7 +1296,9 @@ final class Parser {
                     }
                     else parseError("Incompatible types");
                 }
-                else parseError("Incompatible types");
+                else {
+                    parseError("Incompatible types");
+                }
             }
             vars.remove(name);
             vars.put(name, val);

@@ -1,4 +1,6 @@
-package murlen.util.fscript;
+package murlen.util.fscript.api;
+import murlen.util.fscript.FSException;
+
 import java.util.ArrayList;
 
 /**
@@ -35,5 +37,5 @@ public interface FSFunctionExtension {
      * @param params an array list of parameters passed to the function
      * @return the return value (Object) of the call
      **/
-    Object callFunction(String name, ArrayList params) throws FSException;
+    Object callFunction(String name, ArrayList<Object> params) throws FSException;
 }
