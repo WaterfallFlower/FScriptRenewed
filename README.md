@@ -15,7 +15,10 @@ FScriptRenewed - is a fork of original project, called FScript, to make it more 
    ```
 
 ## Corner of License
-The fork is under GNU Lesser General Public License v2.1, but the original project is under the mix of GNU Library General Public License v2 and Apache License (as the author of the original project explains in credits file).
+The fork is under [GNU Lesser General Public License v2.1](https://github.com/WaterfallFlower/FScriptRenewed/blob/main/LICENSE), but the original project is under [the mix of GNU Library General Public License v2 and Apache License](https://github.com/WaterfallFlower/FScriptRenewed/blob/main/COPYING_ORIGINAL) (as the author of the original project explains in credits file).
 
-The commit with original code can be found there.
-The original project is located [here](https://sourceforge.net/projects/fscript/), copyright Joachim Van der Auwera.
+The commit with original code can be found [here](https://github.com/WaterfallFlower/FScriptRenewed/tree/0f145defddbdb2a5d08baf7dec5603bd3b9ffe93).
+
+The original project is located [here](https://sourceforge.net/projects/fscript/), [copyright Joachim Van der Auwera](https://github.com/WaterfallFlower/FScriptRenewed/blob/main/CREDITS_ORIGINAL).
+
+The fork project copyright WaterfallFlower, 2022 year.
