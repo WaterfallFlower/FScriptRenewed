@@ -61,8 +61,7 @@ package murlen.util.fscript.introspection;
  * @author <a href="mailto:geirm@optonline.net">Geir Magnusson Jr.</a>
  * @version $Id: IntrospectionCacheData.java,v 1.1.1.1 2004/07/28 01:28:03 murlen Exp $
  */
-public class IntrospectionCacheData
-{
+public class IntrospectionCacheData {
     /**
      *  Object to pair with class - currently either a Method or
      *  AbstractExecutor. It can be used in any way the using node
@@ -74,5 +73,5 @@ public class IntrospectionCacheData
      *  Class of context data object associated with the introspection
      *  information
      */
-    public Class  contextData;
+    public Class<?> contextData;
 }

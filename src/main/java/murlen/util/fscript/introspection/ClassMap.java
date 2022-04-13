@@ -74,9 +74,10 @@ import java.lang.reflect.Modifier;
  * @author <a href="mailto:joachim@triathlon98.be">Joachim Van der Auwera</a>
  * @version $Id: ClassMap.java,v 1.1.1.1 2004/07/28 01:28:03 murlen Exp $
  */
-public class ClassMap
-{
-    private static final class CacheMiss { }
+public class ClassMap {
+    private static final class CacheMiss {
+    }
+
     private static final CacheMiss CACHE_MISS = new CacheMiss();
 
     /**
@@ -84,21 +85,20 @@ public class ClassMap
      * the basis for the Method map.
      */
 
-    private Class clazz;
+    private final Class<?> clazz;
 
     /**
      * Cache of Methods, or CACHE_MISS, keyed by method
      * name and actual arguments used to find it.
      */
-    private Map methodCache = new Hashtable();
+    private final Map<String, Object> methodCache = new Hashtable<>();
 
-    private MethodMap methodMap = new MethodMap();
+    private final MethodMap methodMap = new MethodMap();
 
     /**
      * Standard constructor
      */
-    public ClassMap( Class clazz)
-    {
+    public ClassMap(Class<?> clazz) {
         this.clazz = clazz;
         populateMethodCache();
     }
@@ -106,62 +106,45 @@ public class ClassMap
     /**
      * @return the class object whose methods are cached by this map.
      */
-     Class getCachedClass()
-     {
-         return clazz;
-     }
+    Class<?> getCachedClass() {
+        return clazz;
+    }
 
     /**
      * Find a Method using the methodKey
      * provided.
-     *
+     * <p>
      * Look in the methodMap for an entry.  If found,
      * it'll either be a CACHE_MISS, in which case we
      * simply give up, or it'll be a Method, in which
      * case, we return it.
-     *
+     * <p>
      * If nothing is found, then we must actually go
      * and introspect the method from the MethodMap.
      */
-    public Method findMethod(String name, Object[] params)
-        throws MethodMap.AmbiguousException
-    {
+    public Method findMethod(String name, Object[] params) throws MethodMap.AmbiguousException {
         String methodKey = makeMethodKey(name, params);
-        Object cacheEntry = methodCache.get( methodKey );
+        Object cacheEntry = methodCache.get(methodKey);
 
-        if (cacheEntry == CACHE_MISS)
-        {
+        if (cacheEntry == CACHE_MISS) {
             return null;
         }
 
-        if (cacheEntry == null)
-        {
-            try
-            {
-                cacheEntry = methodMap.find( name,
-                                             params );
-            }
-            catch( MethodMap.AmbiguousException ae )
-            {
+        if (cacheEntry == null) {
+            try {
+                cacheEntry = methodMap.find(name, params);
+            } catch (MethodMap.AmbiguousException ae) {
                 /*
                  *  that's a miss :)
                  */
-
-                methodCache.put( methodKey,
-                                 CACHE_MISS );
-
+                methodCache.put(methodKey, CACHE_MISS);
                 throw ae;
             }
 
-            if ( cacheEntry == null )
-            {
-                methodCache.put( methodKey,
-                                 CACHE_MISS );
-            }
-            else
-            {
-                methodCache.put( methodKey,
-                                 cacheEntry );
+            if (cacheEntry == null) {
+                methodCache.put(methodKey, CACHE_MISS);
+            } else {
+                methodCache.put(methodKey, cacheEntry);
             }
         }
 
@@ -175,29 +158,15 @@ public class ClassMap
      * are taken from all the public methods
      * that our class provides.
      */
-    private void populateMethodCache()
-    {
-        /*
-         *  get all publicly accessible methods
-         */
-
-        Method[] methods = getAccessibleMethods(clazz);
-
-        /*
-         * map and cache them
-         */
-
-        for (int i = 0; i < methods.length; i++)
-        {
-            Method method = methods[i];
-
+    private void populateMethodCache() {
+        for (Method method : getAccessibleMethods(clazz)) {
             /*
              *  now get the 'public method', the method declared by a
              *  public interface or class. (because the actual implementing
              *  class may be a facade...
              */
 
-            Method publicMethod = getPublicMethod( method );
+            Method publicMethod = getPublicMethod(method);
 
             /*
              *  it is entirely possible that there is no public method for
@@ -206,10 +175,9 @@ public class ClassMap
              *  in which case, ignore it.  Otherwise, map and cache
              */
 
-            if ( publicMethod != null)
-            {
-                methodMap.add( publicMethod );
-                methodCache.put(  makeMethodKey( publicMethod), publicMethod);
+            if (publicMethod != null) {
+                methodMap.add(publicMethod);
+                methodCache.put(makeMethodKey(publicMethod), publicMethod);
             }
         }
     }
@@ -219,74 +187,61 @@ public class ClassMap
      * the concatenation of the name and the
      * types of the method parameters.
      */
-    private String makeMethodKey(Method method)
-    {
-        Class[] parameterTypes = method.getParameterTypes();
+    private String makeMethodKey(Method method) {
+        Class<?>[] parameterTypes = method.getParameterTypes();
 
-        StringBuffer methodKey = new StringBuffer(method.getName());
+        StringBuilder methodKey = new StringBuilder(method.getName());
 
-        for (int j = 0; j < parameterTypes.length; j++)
-        {
+        for (Class<?> parameterType : parameterTypes) {
             /*
              * If the argument type is primitive then we want
              * to convert our primitive type signature to the
              * corresponding Object type so introspection for
              * methods with primitive types will work correctly.
              */
-            if (parameterTypes[j].isPrimitive())
-            {
-                if (parameterTypes[j].equals(Boolean.TYPE))
+            if (parameterType.isPrimitive()) {
+                if (parameterType.equals(Boolean.TYPE))
                     methodKey.append("java.lang.Boolean");
-                else if (parameterTypes[j].equals(Byte.TYPE))
+                else if (parameterType.equals(Byte.TYPE))
                     methodKey.append("java.lang.Byte");
-                else if (parameterTypes[j].equals(Character.TYPE))
+                else if (parameterType.equals(Character.TYPE))
                     methodKey.append("java.lang.Character");
-                else if (parameterTypes[j].equals(Double.TYPE))
+                else if (parameterType.equals(Double.TYPE))
                     methodKey.append("java.lang.Double");
-                else if (parameterTypes[j].equals(Float.TYPE))
+                else if (parameterType.equals(Float.TYPE))
                     methodKey.append("java.lang.Float");
-                else if (parameterTypes[j].equals(Integer.TYPE))
+                else if (parameterType.equals(Integer.TYPE))
                     methodKey.append("java.lang.Integer");
-                else if (parameterTypes[j].equals(Long.TYPE))
+                else if (parameterType.equals(Long.TYPE))
                     methodKey.append("java.lang.Long");
-                else if (parameterTypes[j].equals(Short.TYPE))
+                else if (parameterType.equals(Short.TYPE))
                     methodKey.append("java.lang.Short");
-            }
-            else
-            {
-                methodKey.append(parameterTypes[j].getName());
+            } else {
+                methodKey.append(parameterType.getName());
             }
         }
 
         return methodKey.toString();
     }
 
-    private static String makeMethodKey(String method, Object[] params)
-    {
-        StringBuffer methodKey = new StringBuffer().append(method);
+    private static String makeMethodKey(String method, Object[] params) {
+        StringBuilder methodKey = new StringBuilder().append(method);
 
-        for (int j = 0; j < params.length; j++)
-        {
-            Object arg = params[j];
+        for (Object param : params) {
+            Object arg = param;
 
-            if (arg == null)
-            {
+            if (arg == null) {
                 arg = Object.class;
-            }
-            else
-            {
-                if (arg instanceof FSObject)
-                {
-                    arg=((FSObject)arg).getNullClass();
-                    if (arg==null) arg=Object.class;
-                }
-                else
-                {
-                    arg=arg.getClass();
+            } else {
+                if (arg instanceof FSObject) {
+                    arg = ((FSObject) arg).getNullClass();
+                    if (arg == null) arg = Object.class;
+                } else {
+                    arg = arg.getClass();
                 }
             }
 
-            methodKey.append(((Class)arg).getName());
+            methodKey.append(((Class<?>) arg).getName());
         }
 
         return methodKey.toString();
@@ -298,8 +253,7 @@ public class ClassMap
      * from public superclasses and interfaces (if they exist). Basically
      * upcasts every method to the nearest acccessible method.
      */
-    private static Method[] getAccessibleMethods(Class clazz)
-    {
+    private static Method[] getAccessibleMethods(Class<?> clazz) {
         Method[] methods = clazz.getMethods();
 
         /*
@@ -307,8 +261,7 @@ public class ClassMap
          *  clazz is public
          */
 
-        if (Modifier.isPublic(clazz.getModifiers()))
-        {
+        if (Modifier.isPublic(clazz.getModifiers())) {
             return methods;
         }
 
@@ -318,8 +271,7 @@ public class ClassMap
 
         MethodInfo[] methodInfos = new MethodInfo[methods.length];
 
-        for(int i = methods.length; i-- > 0; )
-        {
+        for (int i = methods.length; i-- > 0; ) {
             methodInfos[i] = new MethodInfo(methods[i]);
         }
 
@@ -329,17 +281,13 @@ public class ClassMap
          *  Reallocate array in case some method had no accessible counterpart.
          */
 
-        if(upcastCount < methods.length)
-        {
+        if (upcastCount < methods.length) {
             methods = new Method[upcastCount];
         }
 
         int j = 0;
-        for(int i = 0; i < methodInfos.length; ++i)
-        {
-            MethodInfo methodInfo = methodInfos[i];
-            if(methodInfo.upcast)
-            {
+        for (MethodInfo methodInfo : methodInfos) {
+            if (methodInfo.upcast) {
                 methods[j++] = methodInfo.method;
             }
         }
@@ -347,16 +295,15 @@ public class ClassMap
     }
 
     /**
-     *  Recursively finds a match for each method, starting with the class, and then
-     *  searching the superclass and interfaces.
+     * Recursively finds a match for each method, starting with the class, and then
+     * searching the superclass and interfaces.
      *
-     *  @param clazz Class to check
-     *  @param methodInfos array of methods we are searching to match
-     *  @param upcastCount current number of methods we have matched
-     *  @return count of matched methods
+     * @param clazz       Class to check
+     * @param methodInfos array of methods we are searching to match
+     * @param upcastCount current number of methods we have matched
+     * @return count of matched methods
      */
-    private static int getAccessibleMethods( Class clazz, MethodInfo[] methodInfos, int upcastCount)
-    {
+    private static int getAccessibleMethods(Class<?> clazz, MethodInfo[] methodInfos, int upcastCount) {
         int l = methodInfos.length;
 
         /*
@@ -364,22 +311,16 @@ public class ClassMap
          *  'non-upcasted' methods to see if we have a match
          */
 
-        if( Modifier.isPublic(clazz.getModifiers()) )
-        {
-            for(int i = 0; i < l && upcastCount < l; ++i)
-            {
-                try
-                {
+        if (Modifier.isPublic(clazz.getModifiers())) {
+            for (int i = 0; i < l && upcastCount < l; ++i) {
+                try {
                     MethodInfo methodInfo = methodInfos[i];
 
-                    if(!methodInfo.upcast)
-                    {
+                    if (!methodInfo.upcast) {
                         methodInfo.tryUpcasting(clazz);
                         upcastCount++;
                     }
-                }
-                catch(NoSuchMethodException e)
-                {
+                } catch (NoSuchMethodException e) {
                     /*
                      *  Intentionally ignored - it means
                      *  it wasn't found in the current class
@@ -391,8 +332,7 @@ public class ClassMap
              *  Short circuit if all methods were upcast
              */
 
-            if(upcastCount == l)
-            {
+            if (upcastCount == l) {
                 return upcastCount;
             }
         }
@@ -401,18 +341,16 @@ public class ClassMap
          *   Examine superclass
          */
 
-        Class superclazz = clazz.getSuperclass();
+        Class<?> superclazz = clazz.getSuperclass();
 
-        if(superclazz != null)
-        {
-            upcastCount = getAccessibleMethods(superclazz , methodInfos, upcastCount);
+        if (superclazz != null) {
+            upcastCount = getAccessibleMethods(superclazz, methodInfos, upcastCount);
 
             /*
              *  Short circuit if all methods were upcast
              */
 
-            if(upcastCount == l)
-            {
+            if (upcastCount == l) {
                 return upcastCount;
             }
         }
@@ -423,18 +361,16 @@ public class ClassMap
          *  any interfaces, however nothing guarantees it will not in future.
          */
 
-        Class[] interfaces = clazz.getInterfaces();
+        Class<?>[] interfaces = clazz.getInterfaces();
 
-        for(int i = interfaces.length; i-- > 0; )
-        {
+        for (int i = interfaces.length; i-- > 0; ) {
             upcastCount = getAccessibleMethods(interfaces[i], methodInfos, upcastCount);
 
             /*
              *  Short circuit if all methods were upcast
              */
 
-            if(upcastCount == l)
-            {
+            if (upcastCount == l) {
                 return upcastCount;
             }
         }
@@ -443,27 +379,25 @@ public class ClassMap
     }
 
     /**
-     *  For a given method, retrieves its publicly accessible counterpart.
-     *  This method will look for a method with same name
-     *  and signature declared in a public superclass or implemented interface of this
-     *  method's declaring class. This counterpart method is publicly callable.
+     * For a given method, retrieves its publicly accessible counterpart.
+     * This method will look for a method with same name
+     * and signature declared in a public superclass or implemented interface of this
+     * method's declaring class. This counterpart method is publicly callable.
      *
-     *  @param method a method whose publicly callable counterpart is requested.
-     *  @return the publicly callable counterpart method. Note that if the parameter
-     *  method is itself declared by a public class, this method is an identity
-     *  function.
+     * @param method a method whose publicly callable counterpart is requested.
+     * @return the publicly callable counterpart method. Note that if the parameter
+     * method is itself declared by a public class, this method is an identity
+     * function.
      */
-    public static Method getPublicMethod(Method method)
-    {
-        Class clazz = method.getDeclaringClass();
+    public static Method getPublicMethod(Method method) {
+        Class<?> clazz = method.getDeclaringClass();
 
         /*
          *   Short circuit for (hopefully the majority of) cases where the declaring
          *   class is public.
          */
 
-        if((clazz.getModifiers() & Modifier.PUBLIC) != 0)
-        {
+        if ((clazz.getModifiers() & Modifier.PUBLIC) != 0) {
             return method;
         }
 
@@ -471,33 +405,28 @@ public class ClassMap
     }
 
     /**
-     *  Looks up the method with specified name and signature in the first public
-     *  superclass or implemented interface of the class.
+     * Looks up the method with specified name and signature in the first public
+     * superclass or implemented interface of the class.
      *
-     *  @param clazz the class whose method is sought
-     *  @param name the name of the method
-     *  @param paramTypes the classes of method parameters
+     * @param clazz      the class whose method is sought
+     * @param name       the name of the method
+     * @param paramTypes the classes of method parameters
      */
-    private static Method getPublicMethod(Class clazz, String name, Class[] paramTypes)
-    {
+    private static Method getPublicMethod(Class<?> clazz, String name, Class<?>[] paramTypes) {
         /*
          *  if this class is public, then try to get it
          */
 
-        if((clazz.getModifiers() & Modifier.PUBLIC) != 0)
-        {
-            try
-            {
+        if ((clazz.getModifiers() & Modifier.PUBLIC) != 0) {
+            try {
                 return clazz.getMethod(name, paramTypes);
-            }
-            catch(NoSuchMethodException e)
-            {
+            } catch (NoSuchMethodException e) {
                 /*
                  *  If the class does not have the method, then neither its
                  *  superclass nor any of its interfaces has it so quickly return
                  *  null.
                  */
-                 return null;
+                return null;
             }
         }
 
@@ -506,14 +435,12 @@ public class ClassMap
          */
 
 
-        Class superclazz = clazz.getSuperclass();
+        Class<?> superclazz = clazz.getSuperclass();
 
-        if ( superclazz != null )
-        {
+        if (superclazz != null) {
             Method superclazzMethod = getPublicMethod(superclazz, name, paramTypes);
 
-            if(superclazzMethod != null)
-            {
+            if (superclazzMethod != null) {
                 return superclazzMethod;
             }
         }
@@ -522,42 +449,34 @@ public class ClassMap
          *  and interfaces
          */
 
-        Class[] interfaces = clazz.getInterfaces();
+        Class<?>[] interfaces = clazz.getInterfaces();
 
-        for(int i = 0; i < interfaces.length; ++i)
-        {
-            Method interfaceMethod = getPublicMethod(interfaces[i], name, paramTypes);
-
-            if(interfaceMethod != null)
-            {
+        for (Class<?> anInterface : interfaces) {
+            Method interfaceMethod = getPublicMethod(anInterface, name, paramTypes);
+            if (interfaceMethod != null)
                 return interfaceMethod;
-            }
         }
 
         return null;
     }
 
     /**
-     *  Used for the iterative discovery process for public methods.
+     * Used for the iterative discovery process for public methods.
      */
-    private static final class MethodInfo
-    {
+    private static final class MethodInfo {
         Method method;
         String name;
-        Class[] parameterTypes;
+        Class<?>[] parameterTypes;
         boolean upcast;
 
-        MethodInfo(Method method)
-        {
+        MethodInfo(Method method) {
             this.method = null;
             name = method.getName();
             parameterTypes = method.getParameterTypes();
             upcast = false;
         }
 
-        void tryUpcasting(Class clazz)
-            throws NoSuchMethodException
-        {
+        void tryUpcasting(Class<?> clazz) throws NoSuchMethodException {
             method = clazz.getMethod(name, parameterTypes);
             name = null;
             parameterTypes = null;
