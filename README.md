@@ -2,6 +2,16 @@
 
 FScriptRenewed - is a fork of original project, called FScript, to make it more compatible and optimised for current java versions.
 
+The wiki page of FScript - http://fscript.sourceforge.net/.
+
+## Goals
+- [ ] Create a simple wiki for the project.
+- [X] Update to the recent Java version and make some compatibility tweaks.
+- [X] Add "$import" support for connection core libraries.
+- [ ] Implement core libraries (math, unsafe, app, etc).
+- [ ] Finish the engine.
+- [ ] Understand how this whole thing works.
+
 ## Building the jar.
 1. Using IDEs with inbuilt/plugin-supported Maven (Eclipse/Intellij IDEA/NetBeans).
 
