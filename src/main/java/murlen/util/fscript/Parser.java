@@ -1151,15 +1151,15 @@ public final class Parser {
                     addVar(name, FS_FALSE);
                     break;
                 }
-                case LexAnn.TT_DEFSTRING:{
+                case LexAnn.TT_DEFSTRING: {
                     addVar(name, "");
                     break;
                 }
-                case LexAnn.TT_DEFDOUBLE:{
+                case LexAnn.TT_DEFDOUBLE: {
                     addVar(name, (double) 0);
                     break;
                 }
-                case LexAnn.TT_DEFOBJECT:{
+                case LexAnn.TT_DEFOBJECT: {
                     addVar(name, new FSObject());
                     break;
                 }

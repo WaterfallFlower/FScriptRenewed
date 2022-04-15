@@ -4,7 +4,6 @@ import murlen.util.fscript.BasicExtension;
 import murlen.util.fscript.FSException;
 import murlen.util.fscript.FSUnsupportedException;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class ExtensionMath extends BasicExtension {
